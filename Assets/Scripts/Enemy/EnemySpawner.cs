@@ -18,11 +18,11 @@ public class EnemySpawner : MonoBehaviour
     [ContextMenu("Spawn")]
     public void SpawnEnemy()
     {
-        var randomAngle = _sphereCollider.transform.rotation;
-        randomAngle.eulerAngles = new Vector3(0, Random.Range(1, 359), 0);
-        _sphereCollider.transform.rotation = randomAngle;
-        var enemyPosition = _sphereCollider.transform.position + _sphereCollider.transform.forward * _sphereCollider.radius;
-        var newEnemy = Instantiate(_enemyPrefab, enemyPosition, Quaternion.identity);
+        var offset = Random.onUnitSphere;
+        offset.y = 0;
+        var enemyPos = _sphereCollider.transform.position + offset.normalized*_sphereCollider.radius;
+
+        var newEnemy = Instantiate(_enemyPrefab, enemyPos, Quaternion.identity);
         newEnemy.transform.parent = _enemyParent;
     }
 
