@@ -1,5 +1,4 @@
 using System.Collections;
-using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -23,7 +22,7 @@ public class EnemySpawner : MonoBehaviour
         randomAngle.eulerAngles = new Vector3(0, Random.Range(1, 359), 0);
         _sphereCollider.transform.rotation = randomAngle;
         var enemyPosition = _sphereCollider.transform.position + _sphereCollider.transform.forward * _sphereCollider.radius;
-        var newEnemy = Instantiate(_enemyPrefab, enemyPosition,quaternion.identity);
+        var newEnemy = Instantiate(_enemyPrefab, enemyPosition, Quaternion.identity);
         newEnemy.transform.parent = _enemyParent;
     }
 
