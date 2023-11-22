@@ -2,9 +2,10 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-
 public class Enemy : MonoBehaviour
 {
+    public event Action<Enemy> OnDie;
+    
     [SerializeField] private float _hp = 10;
     [SerializeField] private float _speed = 5f;
     [SerializeField] private float _minDistance = 1f;
@@ -15,6 +16,17 @@ public class Enemy : MonoBehaviour
     private YieldInstruction _halfSecond = new WaitForSeconds(0.5f);
     private Rigidbody _rigidbody;
     private MeshRenderer _meshRenderer;
+
+    public EnemyBody GetEnemyBody() => _enemyBody;
+    
+    public void AddDamage(float damage)
+    {
+        _hp -= damage;
+        if (_hp <= 0)
+        {
+            Die();
+        }
+    }
     
     private void Start()
     {
@@ -37,6 +49,11 @@ public class Enemy : MonoBehaviour
     private void Move()
     {
        _rigidbody.velocity = (_tower.transform.position - transform.position).normalized * _speed * Time.fixedDeltaTime;
+    }
+
+    private void Die()
+    {
+        Destroy(gameObject);
     }
 
     private IEnumerator CheckDistanceRoutine()
