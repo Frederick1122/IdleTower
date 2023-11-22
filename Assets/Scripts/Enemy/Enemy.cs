@@ -15,7 +15,8 @@ public class Enemy : MonoBehaviour
     private bool _isMoving = true;
     private YieldInstruction _halfSecond = new WaitForSeconds(0.5f);
     private Rigidbody _rigidbody;
-    private SkinnedMeshRenderer _skinnedMeshRenderer;
+    private GameObject _skinnedMeshRenderer;
+    private EnemyAnimator _animator;
 
     public EnemyBody GetEnemyBody() => _enemyBody;
     
@@ -33,27 +34,31 @@ public class Enemy : MonoBehaviour
         _tower = GameBus.Instance.GetTower();
         _rigidbody = _enemyBody.GetRigidbody();
         _skinnedMeshRenderer = _enemyBody.GetSkinnedMeshRenderer();
-        _skinnedMeshRenderer.enabled = false;
+        _skinnedMeshRenderer.SetActive(false);
         
         _enemyBody.Init(this, _tower);
         _enemyBody.OnCollisionEnterAction += FirstStart;
         StartCoroutine(CheckDistanceRoutine());
+
+        _animator = GetComponent<EnemyAnimator>();
     }
 
     private void FixedUpdate()
     {
-        if(_isMoving && _skinnedMeshRenderer.enabled)
+        if(_isMoving && _skinnedMeshRenderer.activeInHierarchy)
             Move();
     }
 
     private void Move()
     {
        _rigidbody.velocity = (_tower.transform.position - transform.position).normalized * _speed * Time.fixedDeltaTime;
+       _animator.PlayWalk();
     }
 
     private void Die()
     {
         OnDie?.Invoke(this);
+        _animator.PlayDead();
         Destroy(gameObject);
     }
 
@@ -73,7 +78,7 @@ public class Enemy : MonoBehaviour
 
     private void FirstStart(Collision uselessCollision)
     {
-        _skinnedMeshRenderer.enabled = true;
+        _skinnedMeshRenderer.SetActive(true);
         _enemyBody.OnCollisionEnterAction -= FirstStart;
     }
 }
