@@ -7,7 +7,7 @@
     {
         public event Action<Collision> OnCollisionEnterAction;
         [SerializeField] private Transform _targetPoint;
-        [SerializeField] private SkinnedMeshRenderer _skinnedMeshRenderer;
+        [SerializeField] private GameObject _skinnedMeshRenderer;
 
         private Rigidbody _rigidbody;
         private Enemy _enemy;
@@ -25,7 +25,7 @@
         
         public Rigidbody GetRigidbody() => _rigidbody;
         
-        public SkinnedMeshRenderer GetSkinnedMeshRenderer() => _skinnedMeshRenderer;
+        public GameObject GetSkinnedMeshRenderer() => _skinnedMeshRenderer;
 
         public Enemy GetEnemy() => _enemy;
 
