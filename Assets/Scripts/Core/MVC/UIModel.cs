@@ -1,4 +1,4 @@
-﻿public class UIModel
+﻿public abstract class UIModel
 {
 
 }
