@@ -1,10 +1,12 @@
-using System;
 using Configs;
 
 public class GameMenuController : UIController<GameMenuView, GameMenuModel>
 {
+    private GameMenuModel _model;
+    
     public override void Init()
     {
+        GameBus.Instance.OnUpdateCoins += UpdateCoins;
         _view.onNewUpgrade += IncrementLevel;
         base.Init();
         
@@ -15,11 +17,14 @@ public class GameMenuController : UIController<GameMenuView, GameMenuModel>
     {
         if (_view != null)
             _view.onNewUpgrade -= IncrementLevel;
+        
+        if (GameBus.Instance != null)
+            GameBus.Instance.OnUpdateCoins -= UpdateCoins;
     }
 
     public override void UpdateView()
     {
-        var model = new GameMenuModel()
+        _model = new GameMenuModel
         {
             coins = GameBus.Instance.GetCoins(),
             towerDamageLevel = GameBus.Instance.GetUpgradeLevel(UpgradesType.TOWER_DAMAGE, true),
@@ -28,9 +33,15 @@ public class GameMenuController : UIController<GameMenuView, GameMenuModel>
             costOfEnemyDeathLevel = GameBus.Instance.GetUpgradeLevel(UpgradesType.COST_OF_ENEMY_DEATH_DAMAGE, true)
         };
         
-        _view.UpdateView(model);
+        _view.UpdateView(_model);
     }
 
+    private void UpdateCoins()
+    {
+        _model.coins = GameBus.Instance.GetCoins();
+        _view.UpdateView(_model);
+    }
+    
     private void IncrementLevel(UpgradesType type)
     {
         var coins = GameBus.Instance.GetCoins();

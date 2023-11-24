@@ -10,6 +10,9 @@ public class GameBus : Singleton<GameBus>
     public event Action OnContinueGame;
     public event Action OnEndGame;
 
+    public event Action OnUpdateUpgrades;
+    public event Action OnUpdateCoins;
+
     [SerializeField] private Tower _tower;
     [SerializeField] private UpgradesConfig _upgradesConfig;
     
@@ -75,6 +78,7 @@ public class GameBus : Singleton<GameBus>
         }
         
         BaseDataHandler.SaveUpgrade(level, type);
+        OnUpdateUpgrades?.Invoke();
     }
 
     public UpgradeLevel GetUpgradeLevel(UpgradesType type, bool nextLevel = false)
@@ -102,5 +106,6 @@ public class GameBus : Singleton<GameBus>
     {
         _coins = coins;
         BaseDataHandler.SaveCoins(_coins);
+        OnUpdateCoins?.Invoke();
     }
 }

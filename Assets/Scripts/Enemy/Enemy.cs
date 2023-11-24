@@ -19,6 +19,7 @@ public class Enemy : MonoBehaviour
     private EnemyAnimator _animator;
     private Coroutine _walkRoutine;
     private Coroutine _dieRoutine;
+    private float _costOfEnemyDeathLevel;
     
     private void OnCollisionEnter(Collision collision)
     {
@@ -29,14 +30,17 @@ public class Enemy : MonoBehaviour
     public void AddDamage(float damage)
     {
         _hp -= damage;
-        if (_hp <= 0)
-        {
+        if (_hp <= 0) 
             Die();
-        }
     }
     
     public Transform GetTargetPoint() => _targetPoint;
 
+    public void Init(float costOfEnemyDeathLevel)
+    {
+        _costOfEnemyDeathLevel = costOfEnemyDeathLevel;
+    }
+    
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
@@ -84,6 +88,7 @@ public class Enemy : MonoBehaviour
             _walkRoutine = null;
         }
         
+        GameBus.Instance.SetCoins(GameBus.Instance.GetCoins() + _costOfEnemyDeathLevel);
         _dieRoutine = StartCoroutine(DieRoutine());
     }
     

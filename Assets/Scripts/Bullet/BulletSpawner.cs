@@ -1,16 +1,17 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Configs;
 using UnityEngine;
-using Core;
 
 [RequireComponent(typeof(SphereCollider))]
 public class BulletSpawner : MonoBehaviour
 {
     [SerializeField] private Bullet _bulletPrefab;
-    [SerializeField] private float _spawnCooldown = 1f;
-    [SerializeField] private float _bulletDamage = 1.5f;
     [SerializeField] private float _bulletSpeed = 7f;
 
+    private float _spawnCooldown = 1f;
+    private float _bulletDamage = 1.5f;
     private List<Enemy> _enemies = new List<Enemy>();
     private Coroutine _spawnRoutine;
     
@@ -23,6 +24,18 @@ public class BulletSpawner : MonoBehaviour
             enemy.OnDie += RemoveEnemy; 
             UpdateEnemiesStack();
         }
+    }
+
+    private void Start()
+    {
+        GameBus.Instance.OnUpdateUpgrades += UpdateParameters;
+        UpdateParameters();
+    }
+
+    private void OnDestroy()
+    {
+        if (GameBus.Instance != null)
+            GameBus.Instance.OnUpdateUpgrades -= UpdateParameters;
     }
 
     private void UpdateEnemiesStack()
@@ -50,12 +63,18 @@ public class BulletSpawner : MonoBehaviour
         bullet.transform.parent = transform;
         bullet.Init(_bulletDamage, _bulletSpeed, enemy);
     }
+
+    private void UpdateParameters()
+    {
+        _bulletDamage = GameBus.Instance.GetUpgradeLevel(UpgradesType.TOWER_DAMAGE).value;
+        _spawnCooldown = GameBus.Instance.GetUpgradeLevel(UpgradesType.TOWER_DAMAGE).value;
+    }
     
     private IEnumerator SpawnBulletRoutine()
     {
         while (_enemies.Count > 0)
         {
-          SpawnBullet(_enemies[^1]);
+          SpawnBullet(_enemies[0]);
           yield return new WaitForSeconds(_spawnCooldown);
         }
 

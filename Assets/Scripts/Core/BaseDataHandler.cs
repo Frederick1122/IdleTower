@@ -17,7 +17,7 @@ namespace Core
 
         private static int GetInt(string key)
         {
-            if (!PlayerPrefs.HasKey(key))
+            if (PlayerPrefs.HasKey(key))
                 return PlayerPrefs.GetInt(key);
             
             PlayerPrefs.SetInt(key, 1);
@@ -33,7 +33,7 @@ namespace Core
         
         private static float GetFloat(string key)
         {
-            if (!PlayerPrefs.HasKey(key))
+            if (PlayerPrefs.HasKey(key))
                 return PlayerPrefs.GetFloat(key);
             
             PlayerPrefs.SetFloat(key, 0f);
