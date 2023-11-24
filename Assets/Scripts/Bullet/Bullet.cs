@@ -8,14 +8,14 @@ public class Bullet : MonoBehaviour
     
     private float _speed = 1;
     private float _damage;
-    private EnemyBody _enemyBody;
+    private Enemy _enemy;
     
     private void OnTriggerEnter(Collider other)
     {
-        var enemyBody = other.GetComponent<EnemyBody>();
-        if (enemyBody != null && enemyBody == _enemyBody)
+        var enemy = other.GetComponent<Enemy>();
+        if (enemy != null && enemy == _enemy)
         {
-            enemyBody.GetEnemy().AddDamage(_damage);
+            enemy.AddDamage(_damage);
             Destroy(gameObject);
         }
 
@@ -30,10 +30,10 @@ public class Bullet : MonoBehaviour
         transform.Translate( Vector3.forward  * _speed * Time.deltaTime, Space.Self);
     }
 
-    public void Init(float damage, float speed, EnemyBody enemyBody)
+    public void Init(float damage, float speed, Enemy enemyBody)
     {
         _damage = damage;
         _speed = speed;
-        _enemyBody = enemyBody;
+        _enemy = enemyBody;
     }
 }

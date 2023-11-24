@@ -16,10 +16,9 @@ public class BulletSpawner : MonoBehaviour
     
     private void OnTriggerEnter(Collider other)
     {
-        var enemyBody = other.GetComponent<EnemyBody>();
-        if (enemyBody != null)
+        var enemy = other.GetComponent<Enemy>();
+        if (enemy != null)
         {
-            var enemy = enemyBody.GetEnemy();
             _enemies.Add(enemy);
             enemy.OnDie += RemoveEnemy; 
             UpdateEnemiesStack();
@@ -47,9 +46,9 @@ public class BulletSpawner : MonoBehaviour
     private void SpawnBullet(Enemy enemy)
     {
         var bullet = Instantiate(_bulletPrefab, transform.position, Quaternion.identity);
-        bullet.transform.LookAt(enemy.GetEnemyBody().GetTargetPoint().position);
+        bullet.transform.LookAt(enemy.GetTargetPoint().position);
         bullet.transform.parent = transform;
-        bullet.Init(_bulletDamage, _bulletSpeed, enemy.GetEnemyBody());
+        bullet.Init(_bulletDamage, _bulletSpeed, enemy);
     }
     
     private IEnumerator SpawnBulletRoutine()
