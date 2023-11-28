@@ -1,5 +1,7 @@
-using System.Collections;
+using System;
+using System.Threading;
 using Configs;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -9,13 +11,14 @@ public class EnemySpawner : MonoBehaviour
 
     [SerializeField] private Transform _enemyParent;
     [SerializeField] private SphereCollider _sphereCollider;
-    
+
+    private readonly CancellationTokenSource _spawnCts = new();
     private float _spawnCooldown = 3f;
     private float _costOfEnemyDeathLevel;
 
     private void Start()
     {
-        StartCoroutine(SpawnRoutine());
+        SpawnTask(_spawnCts.Token).Forget();
         UpdateParameters();
         GameBus.Instance.OnUpdateUpgrades += UpdateParameters;
     }
@@ -24,6 +27,8 @@ public class EnemySpawner : MonoBehaviour
     {
         if (GameBus.Instance != null)
             GameBus.Instance.OnUpdateUpgrades -= UpdateParameters;
+        
+        _spawnCts.Cancel();
     }
 
     [ContextMenu("Spawn")]
@@ -44,11 +49,11 @@ public class EnemySpawner : MonoBehaviour
         _costOfEnemyDeathLevel = GameBus.Instance.GetUpgradeLevel(UpgradesType.COST_OF_ENEMY_DEATH_DAMAGE).value;
     }
 
-    private IEnumerator SpawnRoutine()
+    private async UniTaskVoid SpawnTask(CancellationToken token)
     {
         while (true)
         {
-            yield return new WaitForSeconds(_spawnCooldown);
+            await UniTask.Delay(TimeSpan.FromSeconds(_spawnCooldown), cancellationToken: token);
             SpawnEnemy();
         }
     }

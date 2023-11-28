@@ -1,7 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using Configs;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 [RequireComponent(typeof(SphereCollider))]
@@ -12,8 +13,8 @@ public class BulletSpawner : MonoBehaviour
 
     private float _spawnCooldown = 1f;
     private float _bulletDamage = 1.5f;
-    private List<Enemy> _enemies = new List<Enemy>();
-    private Coroutine _spawnRoutine;
+    private List<Enemy> _enemies = new();
+    private CancellationTokenSource _spawnCts = new();
     
     private void OnTriggerEnter(Collider other)
     {
@@ -40,13 +41,13 @@ public class BulletSpawner : MonoBehaviour
 
     private void UpdateEnemiesStack()
     {
-        if (_enemies.Count > 0 && _spawnRoutine == null)
-            _spawnRoutine = StartCoroutine(SpawnBulletRoutine());
-        else if (_enemies.Count == 0 && _spawnRoutine != null)
+        if (_enemies.Count > 0 && _spawnCts.IsCancellationRequested)
         {
-            StopCoroutine(_spawnRoutine);
-            _spawnRoutine = null;
+            _spawnCts = new CancellationTokenSource();
+            SpawnBulletTask(_spawnCts).Forget();
         }
+        else if (_enemies.Count == 0 && !_spawnCts.IsCancellationRequested) 
+            _spawnCts.Cancel();
     }
 
     private void RemoveEnemy(Enemy enemy)
@@ -70,15 +71,15 @@ public class BulletSpawner : MonoBehaviour
         _spawnCooldown = GameBus.Instance.GetUpgradeLevel(UpgradesType.TOWER_DAMAGE).value;
     }
     
-    private IEnumerator SpawnBulletRoutine()
+    private async UniTaskVoid SpawnBulletTask(CancellationTokenSource cts)
     {
         while (_enemies.Count > 0)
         {
           SpawnBullet(_enemies[0]);
-          yield return new WaitForSeconds(_spawnCooldown);
+          await UniTask.Delay(TimeSpan.FromSeconds(_spawnCooldown), cancellationToken: cts.Token);
         }
 
-        _spawnRoutine = null;
+        cts.Cancel();
         UpdateEnemiesStack();
     }
 }

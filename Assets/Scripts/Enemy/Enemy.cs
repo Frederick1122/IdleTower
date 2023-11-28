@@ -1,9 +1,13 @@
 using System;
 using System.Collections;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    private const float DELAY = 0.5f;
+    
     public event Action<Enemy> OnDie;
    
     [SerializeField] private float _hp = 10;
@@ -13,19 +17,13 @@ public class Enemy : MonoBehaviour
     [SerializeField] private GameObject _skinnedMeshRenderer;
     
     private Tower _tower;
-    private bool _isMoving = true;
-    private YieldInstruction _halfSecond = new WaitForSeconds(0.5f);
     private Rigidbody _rigidbody;
     private EnemyAnimator _animator;
-    private Coroutine _walkRoutine;
-    private Coroutine _dieRoutine;
+    private bool _isMoving = true;
     private float _costOfEnemyDeathLevel;
     
-    private void OnCollisionEnter(Collision collision)
-    {
-        if(!_skinnedMeshRenderer.activeSelf)
-            FirstStart();
-    }
+    private readonly CancellationTokenSource _checkDistanceCts = new();
+    private readonly CancellationTokenSource _dieCts = new();
 
     public void AddDamage(float damage)
     {
@@ -41,6 +39,19 @@ public class Enemy : MonoBehaviour
         _costOfEnemyDeathLevel = costOfEnemyDeathLevel;
     }
     
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(!_skinnedMeshRenderer.activeSelf)
+            FirstStart();
+    }
+
+    private void OnDestroy()
+    {
+        _checkDistanceCts.Cancel();
+
+        _dieCts.Cancel();
+    }
+
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
@@ -53,7 +64,7 @@ public class Enemy : MonoBehaviour
         _skinnedMeshRenderer.SetActive(false);
         transform.LookAt(new Vector3(_tower.transform.position.x, transform.position.y, _tower.transform.position.z));
 
-        _walkRoutine = StartCoroutine(CheckDistanceRoutine());
+        CheckDistanceTask(_checkDistanceCts.Token).Forget();
 
         _animator = GetComponent<EnemyAnimator>();
     }
@@ -82,14 +93,10 @@ public class Enemy : MonoBehaviour
         OnDie?.Invoke(this);
         _isMoving = false;
 
-        if (_walkRoutine != null)
-        {
-            StopCoroutine(_walkRoutine);
-            _walkRoutine = null;
-        }
+        _checkDistanceCts.Cancel();
         
         GameBus.Instance.SetCoins(GameBus.Instance.GetCoins() + _costOfEnemyDeathLevel);
-        _dieRoutine = StartCoroutine(DieRoutine());
+        DieTask(_dieCts.Token).Forget();
     }
     
     private void FirstStart()
@@ -97,11 +104,11 @@ public class Enemy : MonoBehaviour
         _skinnedMeshRenderer.SetActive(true);
     }
     
-    private IEnumerator CheckDistanceRoutine()
+    private async UniTaskVoid CheckDistanceTask(CancellationToken token)
     {
         while (_isMoving)
         {
-            yield return _halfSecond;
+            await UniTask.Delay(TimeSpan.FromSeconds(DELAY), cancellationToken: token);
             
             if (!(Vector3.Distance(transform.position, _tower.transform.position) <= _minDistance))
                 continue;
@@ -112,12 +119,12 @@ public class Enemy : MonoBehaviour
         }
     }
     
-    private IEnumerator DieRoutine()
+    private async UniTaskVoid DieTask(CancellationToken token)
     {
         _animator.PlayDead();
 
-        yield return new WaitForEndOfFrame();
-        yield return new WaitForSeconds(_animator.GetAnimationLength());
+        await UniTask.DelayFrame(1, cancellationToken: token);
+        await UniTask.Delay(TimeSpan.FromSeconds(_animator.GetAnimationLength()), cancellationToken: token);
         
         Destroy(gameObject);
     }
