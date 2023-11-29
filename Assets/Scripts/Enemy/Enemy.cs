@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using UnityEngine;
 using Zenject;
 
@@ -125,6 +126,7 @@ public class Enemy : MonoBehaviour
 
         await UniTask.DelayFrame(1, cancellationToken: token);
         await UniTask.Delay(TimeSpan.FromSeconds(_animator.GetAnimationLength()), cancellationToken: token);
+        await transform.DOMoveY(-1, 2f).SetEase(Ease.InCirc).AsyncWaitForCompletion();
         
         Destroy(gameObject);
     }
