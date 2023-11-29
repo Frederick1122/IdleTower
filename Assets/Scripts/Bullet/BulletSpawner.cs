@@ -14,7 +14,7 @@ public class BulletSpawner : MonoBehaviour
     private float _spawnCooldown = 1f;
     private float _bulletDamage = 1.5f;
     private List<Enemy> _enemies = new();
-    private CancellationTokenSource _spawnCts = new();
+    private CancellationTokenSource _spawnCts;
     
     private void OnTriggerEnter(Collider other)
     {
@@ -41,7 +41,7 @@ public class BulletSpawner : MonoBehaviour
 
     private void UpdateEnemiesStack()
     {
-        if (_enemies.Count > 0 && _spawnCts.IsCancellationRequested)
+        if (_enemies.Count > 0 && (_spawnCts == null || _spawnCts.IsCancellationRequested))
         {
             _spawnCts = new CancellationTokenSource();
             SpawnBulletTask(_spawnCts).Forget();

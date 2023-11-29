@@ -2,20 +2,13 @@ using Base;
 using System;
 using Configs;
 using Core;
-using UnityEngine;
+using Zenject;
 
 public class GameBus : Singleton<GameBus>
 {
-    public event Action OnRestartGame;
-    public event Action OnContinueGame;
-    public event Action OnEndGame;
-
     public event Action OnUpdateUpgrades;
     public event Action OnUpdateCoins;
 
-    [SerializeField] private Tower _tower;
-    [SerializeField] private UpgradesConfig _upgradesConfig;
-    
     private bool _isContinuedGame;
 
     private float _coins;
@@ -24,6 +17,8 @@ public class GameBus : Singleton<GameBus>
     private int _enemyCoolDownLevel;
     private int _costOfEnemyDeathLevel;
 
+    [Inject] private UpgradesConfig _upgradesConfig;
+    
     protected override void Awake()
     {
         base.Awake();
@@ -32,30 +27,6 @@ public class GameBus : Singleton<GameBus>
         _towerCoolDownLevel = BaseDataHandler.GetUpgrade(UpgradesType.TOWER_COOLDOWN);
         _enemyCoolDownLevel = BaseDataHandler.GetUpgrade(UpgradesType.ENEMY_COOLDOWN);
         _costOfEnemyDeathLevel = BaseDataHandler.GetUpgrade(UpgradesType.COST_OF_ENEMY_DEATH_DAMAGE);
-    }
-
-    public Tower GetTower() => _tower; 
-
-    public void EndGame()
-    {
-        OnEndGame?.Invoke();
-    }
-
-    public void RestartGame()
-    {
-        OnRestartGame?.Invoke();
-        _isContinuedGame = false;
-    }
-
-    public void ContinueGame()
-    {
-        OnContinueGame?.Invoke();
-        _isContinuedGame = true;
-    }
-
-    public bool IsContinuedGame()
-    {
-        return _isContinuedGame;
     }
 
     public void IncrementLevel(UpgradesType type)

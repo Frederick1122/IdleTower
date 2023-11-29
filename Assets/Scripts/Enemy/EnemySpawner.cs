@@ -3,6 +3,7 @@ using System.Threading;
 using Configs;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using Zenject;
 using Random = UnityEngine.Random;
 
 public class EnemySpawner : MonoBehaviour
@@ -12,9 +13,11 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private Transform _enemyParent;
     [SerializeField] private SphereCollider _sphereCollider;
 
-    private readonly CancellationTokenSource _spawnCts = new();
+    [Inject] private DiContainer _diContainer;
+    
     private float _spawnCooldown = 3f;
     private float _costOfEnemyDeathLevel;
+    private readonly CancellationTokenSource _spawnCts = new();
 
     private void Start()
     {
@@ -36,11 +39,10 @@ public class EnemySpawner : MonoBehaviour
     {
         var offset = Random.onUnitSphere;
         offset.y = 0;
-        var enemyPos = _sphereCollider.transform.position + offset.normalized*_sphereCollider.radius;
+        var enemyPos = _sphereCollider.transform.position + offset.normalized * _sphereCollider.radius;
 
-        var newEnemy = Instantiate(_enemyPrefab, enemyPos, Quaternion.identity);
-        newEnemy.transform.parent = _enemyParent;
-        newEnemy.Init(_costOfEnemyDeathLevel);
+        var newEnemy = _diContainer.InstantiatePrefab(_enemyPrefab, enemyPos, Quaternion.identity, _enemyParent); 
+        newEnemy.GetComponent<Enemy>().Init(_costOfEnemyDeathLevel);
     }
 
     private void UpdateParameters()

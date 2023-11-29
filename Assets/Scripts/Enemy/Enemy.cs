@@ -1,8 +1,8 @@
 using System;
-using System.Collections;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using Zenject;
 
 public class Enemy : MonoBehaviour
 {
@@ -16,7 +16,8 @@ public class Enemy : MonoBehaviour
     [SerializeField] private Transform _targetPoint;
     [SerializeField] private GameObject _skinnedMeshRenderer;
     
-    private Tower _tower;
+    [Inject] private Tower _tower;
+
     private Rigidbody _rigidbody;
     private EnemyAnimator _animator;
     private bool _isMoving = true;
@@ -59,7 +60,6 @@ public class Enemy : MonoBehaviour
 
     private void Start()
     {
-        _tower = GameBus.Instance.GetTower();
         _rigidbody = GetComponent<Rigidbody>();
         _skinnedMeshRenderer.SetActive(false);
         transform.LookAt(new Vector3(_tower.transform.position.x, transform.position.y, _tower.transform.position.z));
