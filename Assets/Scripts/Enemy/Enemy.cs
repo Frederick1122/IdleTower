@@ -7,10 +7,11 @@ using Zenject;
 
 public class Enemy : MonoBehaviour
 {
-    private const float DELAY = 0.5f;
+    private const float SCAN_DELAY = 0.5f;
     
     public event Action<Enemy> OnDie;
    
+    [SerializeField] private float _dieDelay = 0.5f;
     [SerializeField] private float _hp = 10;
     [SerializeField] private float _speed = 5f;
     [SerializeField] private float _minDistance = 1f;
@@ -109,7 +110,7 @@ public class Enemy : MonoBehaviour
     {
         while (_isMoving)
         {
-            await UniTask.Delay(TimeSpan.FromSeconds(DELAY), cancellationToken: token);
+            await UniTask.Delay(TimeSpan.FromSeconds(SCAN_DELAY), cancellationToken: token);
             
             if (!(Vector3.Distance(transform.position, _tower.transform.position) <= _minDistance))
                 continue;
@@ -122,11 +123,17 @@ public class Enemy : MonoBehaviour
     
     private async UniTaskVoid DieTask(CancellationToken token)
     {
-        _animator.PlayDead();
+        if (_animator.IsAnimatorActive())
+        {
+            _animator.PlayDead();
+            await UniTask.DelayFrame(1, cancellationToken: token);
+            await UniTask.Delay(TimeSpan.FromSeconds(_animator.GetAnimationLength()), cancellationToken: token);
+        }
 
-        await UniTask.DelayFrame(1, cancellationToken: token);
-        await UniTask.Delay(TimeSpan.FromSeconds(_animator.GetAnimationLength()), cancellationToken: token);
-        await transform.DOMoveY(-1, 2f).SetEase(Ease.InCirc).AsyncWaitForCompletion();
+        if (_dieDelay > 0f)
+        {
+            await transform.DOMoveY(-1, _dieDelay).SetEase(Ease.InCirc).AsyncWaitForCompletion();
+        }
         
         Destroy(gameObject);
     }

@@ -68,7 +68,7 @@ public class BulletSpawner : MonoBehaviour
     private void UpdateParameters()
     {
         _bulletDamage = GameBus.Instance.GetUpgradeLevel(UpgradesType.TOWER_DAMAGE).value;
-        _spawnCooldown = GameBus.Instance.GetUpgradeLevel(UpgradesType.TOWER_DAMAGE).value;
+        _spawnCooldown = GameBus.Instance.GetUpgradeLevel(UpgradesType.TOWER_COOLDOWN).value;
     }
     
     private async UniTaskVoid SpawnBulletTask(CancellationTokenSource cts)

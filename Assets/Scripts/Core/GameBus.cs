@@ -2,6 +2,7 @@ using Base;
 using System;
 using Configs;
 using Core;
+using UnityEngine;
 using Zenject;
 
 public class GameBus : Singleton<GameBus>

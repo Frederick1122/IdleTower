@@ -4,6 +4,11 @@ public class EnemyAnimator : MonoBehaviour
 {
     [SerializeField] private Animator _animator;
 
+    public bool IsAnimatorActive()
+    {
+        return _animator.enabled;
+    }
+    
     public float GetAnimationLength()
     {
         return _animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
